@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify
 from models import ThirdPartyService
 from extensions import db
+from auth import role_required
 
 third_party_bp = Blueprint('third_party_service', __name__, url_prefix='/third-party')
-
 
 @third_party_bp.route('/', methods=['GET'])
 def get_services():
@@ -18,7 +18,6 @@ def get_services():
     ]
     return jsonify(result)
 
-
 @third_party_bp.route('/<int:id>', methods=['GET'])
 def get_service(id):
     service = ThirdPartyService.query.get(id)
@@ -32,8 +31,8 @@ def get_service(id):
         "areas_covered": service.areas_covered
     })
 
-
 @third_party_bp.route('/', methods=['POST'])
+@role_required('Admin')
 def add_service():
     data = request.get_json()
     name = data.get('name')
@@ -43,14 +42,18 @@ def add_service():
     if not all([name, contact_info, areas_covered]):
         return jsonify({'error': 'All fields are required'}), 400
 
-    new_service = ThirdPartyService(name=name, contact_info=contact_info, areas_covered=areas_covered)
+    new_service = ThirdPartyService(
+        name=name,
+        contact_info=contact_info,
+        areas_covered=areas_covered
+    )
     db.session.add(new_service)
     db.session.commit()
 
     return jsonify({'message': 'Third-party service added', 'id': new_service.id}), 201
 
-
 @third_party_bp.route('/<int:id>', methods=['PUT'])
+@role_required('Admin')
 def update_service(id):
     service = ThirdPartyService.query.get(id)
     if not service:
@@ -64,8 +67,8 @@ def update_service(id):
     db.session.commit()
     return jsonify({'message': 'Service updated'})
 
-
 @third_party_bp.route('/<int:id>', methods=['DELETE'])
+@role_required('Admin')
 def delete_service(id):
     service = ThirdPartyService.query.get(id)
     if not service:

@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify
 from models import Rider
 from extensions import db
+from auth import role_required
 
 riders_bp = Blueprint('riders', __name__, url_prefix='/riders')
-
 
 @riders_bp.route('/', methods=['GET'])
 def get_riders():
@@ -17,7 +17,6 @@ def get_riders():
         'locality': r.locality
     } for r in riders]
     return jsonify(result)
-
 
 @riders_bp.route('/<int:id>', methods=['GET'])
 def get_rider(id):
@@ -34,8 +33,8 @@ def get_rider(id):
         'locality': rider.locality
     })
 
-
 @riders_bp.route('/', methods=['POST'])
+@role_required('Admin')
 def create_rider():
     data = request.get_json()
     name = data.get('name')
@@ -51,8 +50,8 @@ def create_rider():
 
     return jsonify({'message': 'Rider created', 'id': rider.id}), 201
 
-
 @riders_bp.route('/<int:id>', methods=['PUT'])
+@role_required('Admin')
 def update_rider(id):
     rider = Rider.query.get(id)
     if not rider:
@@ -68,8 +67,8 @@ def update_rider(id):
     db.session.commit()
     return jsonify({'message': 'Rider updated'})
 
-
 @riders_bp.route('/<int:id>', methods=['DELETE'])
+@role_required('Admin')
 def delete_rider(id):
     rider = Rider.query.get(id)
     if not rider:

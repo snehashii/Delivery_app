@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify
 from models import Inventory
 from extensions import db
+from auth import role_required
 
 inventory_bp = Blueprint('inventory', __name__, url_prefix='/inventory')
-
 
 @inventory_bp.route('/', methods=['GET'])
 def get_inventory():
@@ -15,7 +15,6 @@ def get_inventory():
         'location': item.location
     } for item in items]
     return jsonify(result)
-
 
 @inventory_bp.route('/<int:id>', methods=['GET'])
 def get_inventory_item(id):
@@ -30,8 +29,8 @@ def get_inventory_item(id):
         'location': item.location
     })
 
-
 @inventory_bp.route('/', methods=['POST'])
+@role_required('Admin')
 def add_inventory():
     data = request.get_json()
     item_name = data.get('item_name')
@@ -51,8 +50,8 @@ def add_inventory():
 
     return jsonify({'message': 'Inventory item added', 'id': new_item.id}), 201
 
-
 @inventory_bp.route('/<int:id>', methods=['PUT'])
+@role_required('Admin')
 def update_inventory_item(id):
     item = Inventory.query.get(id)
     if not item:
@@ -66,8 +65,8 @@ def update_inventory_item(id):
     db.session.commit()
     return jsonify({'message': 'Inventory item updated'})
 
-
 @inventory_bp.route('/<int:id>', methods=['DELETE'])
+@role_required('Admin')
 def delete_inventory_item(id):
     item = Inventory.query.get(id)
     if not item:

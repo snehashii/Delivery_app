@@ -1,14 +1,17 @@
 from flask import Flask
 from config import Config
 from extensions import db
+from flask_cors import CORS
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
+    CORS(app) 
+
     db.init_app(app)
 
-    # Register Blueprints here
+    # 🔹 Register Blueprints
     from routes.roles import roles_bp
     from routes.users import users_bp
     from routes.permissions import permissions_bp
@@ -19,6 +22,7 @@ def create_app():
     from routes.third_party_service import third_party_bp
     from routes.tracking import tracking_bp
     from routes.inventory import inventory_bp
+
     app.register_blueprint(roles_bp)
     app.register_blueprint(users_bp)
     app.register_blueprint(permissions_bp)

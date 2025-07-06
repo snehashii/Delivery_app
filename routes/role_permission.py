@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from models import RolePermission, Role, Permission
 from extensions import db
+from auth import role_required
 
 role_permissions_bp = Blueprint('role_permissions', __name__, url_prefix='/role-permissions')
 
@@ -19,6 +20,7 @@ def get_role_permissions():
     ])
 
 @role_permissions_bp.route('/', methods=['POST'])
+@role_required('Admin')
 def assign_permission_to_role():
     data = request.get_json()
     role_id = data.get('role_id')
@@ -37,6 +39,7 @@ def assign_permission_to_role():
     }), 201
 
 @role_permissions_bp.route('/<int:id>', methods=['PUT'])
+@role_required('Admin')
 def update_role_permission(id):
     rp = RolePermission.query.get(id)
     if not rp:
@@ -49,8 +52,8 @@ def update_role_permission(id):
     db.session.commit()
     return jsonify({'message': 'RolePermission updated'})
 
-
 @role_permissions_bp.route('/<int:id>', methods=['DELETE'])
+@role_required('Admin')
 def delete_role_permission(id):
     rp = RolePermission.query.get(id)
     if not rp:

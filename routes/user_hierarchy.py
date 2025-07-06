@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify
 from models import UserHierarchy, User
 from extensions import db
+from auth import role_required
 
 user_hierarchy_bp = Blueprint('user_hierarchy', __name__, url_prefix='/user-hierarchy')
-
 
 @user_hierarchy_bp.route('/', methods=['GET'])
 def get_user_hierarchy():
@@ -21,8 +21,8 @@ def get_user_hierarchy():
         })
     return jsonify(result)
 
-
 @user_hierarchy_bp.route('/', methods=['POST'])
+@role_required('Admin')
 def add_user_hierarchy():
     data = request.get_json()
     manager_id = data.get('manager_id')
@@ -43,8 +43,8 @@ def add_user_hierarchy():
 
     return jsonify({'message': 'User hierarchy created', 'id': new_hierarchy.id}), 201
 
-
 @user_hierarchy_bp.route('/<int:id>', methods=['PUT'])
+@role_required('Admin')
 def update_user_hierarchy(id):
     hierarchy = UserHierarchy.query.get(id)
     if not hierarchy:
@@ -65,8 +65,8 @@ def update_user_hierarchy(id):
 
     return jsonify({'message': 'UserHierarchy updated'})
 
-
 @user_hierarchy_bp.route('/<int:id>', methods=['DELETE'])
+@role_required('Admin')
 def delete_user_hierarchy(id):
     hierarchy = UserHierarchy.query.get(id)
     if not hierarchy:

@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify
 from models import Tracking, Delivery
 from extensions import db
+from auth import role_required
 
 tracking_bp = Blueprint('tracking', __name__, url_prefix='/tracking')
-
 
 @tracking_bp.route('/', methods=['GET'])
 def get_tracking():
@@ -21,7 +21,6 @@ def get_tracking():
         })
     return jsonify(result)
 
-
 @tracking_bp.route('/<int:id>', methods=['GET'])
 def get_tracking_entry(id):
     entry = Tracking.query.get(id)
@@ -38,8 +37,8 @@ def get_tracking_entry(id):
         'status_update': entry.status_update
     })
 
-
 @tracking_bp.route('/', methods=['POST'])
+@role_required('Admin')
 def add_tracking():
     data = request.get_json()
     delivery_id = data.get('delivery_id')
@@ -63,8 +62,8 @@ def add_tracking():
 
     return jsonify({'message': 'Tracking entry added', 'id': new_tracking.id}), 201
 
-
 @tracking_bp.route('/<int:id>', methods=['PUT'])
+@role_required('Admin')
 def update_tracking(id):
     entry = Tracking.query.get(id)
     if not entry:
@@ -77,8 +76,8 @@ def update_tracking(id):
     db.session.commit()
     return jsonify({'message': 'Tracking entry updated'})
 
-
 @tracking_bp.route('/<int:id>', methods=['DELETE'])
+@role_required('Admin')
 def delete_tracking(id):
     entry = Tracking.query.get(id)
     if not entry:

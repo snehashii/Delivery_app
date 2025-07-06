@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from models import Delivery, Rider
 from extensions import db
+from auth import role_required
 
 deliveries_bp = Blueprint('deliveries', __name__, url_prefix='/deliveries')
 
@@ -42,6 +43,7 @@ def get_delivery(id):
 
 
 @deliveries_bp.route('/', methods=['POST'])
+@role_required('Admin')
 def create_delivery():
     data = request.get_json()
     order_id = data.get('order_id')
@@ -70,6 +72,7 @@ def create_delivery():
 
 
 @deliveries_bp.route('/<int:id>', methods=['PUT'])
+@role_required('Admin')
 def update_delivery(id):
     delivery = Delivery.query.get(id)
     if not delivery:
@@ -86,6 +89,7 @@ def update_delivery(id):
 
 
 @deliveries_bp.route('/<int:id>', methods=['DELETE'])
+@role_required('Admin')
 def delete_delivery(id):
     delivery = Delivery.query.get(id)
     if not delivery:

@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from models import Role
 from extensions import db
+from auth import role_required
 
 roles_bp = Blueprint('roles', __name__, url_prefix='/roles')
 
@@ -28,6 +29,7 @@ def get_role(role_id):
 
 
 @roles_bp.route('/', methods=['POST'])
+@role_required('Admin')
 def create_role():
     data = request.get_json()
     name = data.get('name')
@@ -47,6 +49,7 @@ def create_role():
 
 
 @roles_bp.route('/<int:role_id>', methods=['PUT'])
+@role_required('Admin')
 def update_role(role_id):
     role = Role.query.get(role_id)
     if not role:
@@ -61,6 +64,7 @@ def update_role(role_id):
 
 
 @roles_bp.route('/<int:role_id>', methods=['DELETE'])
+@role_required('Admin')
 def delete_role(role_id):
     role = Role.query.get(role_id)
     if not role:

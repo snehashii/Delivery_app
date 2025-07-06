@@ -79,14 +79,74 @@ CREATE TABLE inventory (
     quantity_available INT,
     location VARCHAR(100)
 );
--- Insert sample roles
 
-INSERT INTO roles (name, description) VALUES 
-('Admin', 'Full access'),
-('Manager', 'Can manage deliveries'),
+INSERT INTO roles (name, description) VALUES
+('Admin', 'Has full access'),
+('Manager', 'Can manage deliveries and riders'),
 ('Rider', 'Handles delivery tasks');
 
--- Insert a test user
-INSERT INTO users (name, email, password, role_id) 
-VALUES ('Sneha Sharma', 'sneha@example.com', 'hashed_password_here', 2);
+SELECT * FROM roles;
 
+INSERT INTO users (name, email, password, role_id) VALUES
+('Sneha Sharma', 'sneha@example.com', 'admin123', 1),  -- Admin
+('Raj Manager', 'raj@example.com', 'manager123', 2),   -- Manager
+('Ravi Rider', 'ravi@example.com', 'rider123', 3);     -- Rider
+
+SELECT * FROM users;
+
+INSERT INTO permissions (page_name, access_level) VALUES
+('roles', 'read-write'),
+('users', 'read-write'),
+('deliveries', 'read'),
+('riders', 'read-write'),
+('inventory', 'read-write');
+
+SELECT * FROM permissions;
+
+-- Assign all permissions to Admin
+INSERT INTO role_permissions (role_id, permission_id) VALUES
+(1, 1), (1, 2), (1, 3), (1, 4), (1, 5),
+
+-- Manager has limited access
+(2, 2), (2, 3), (2, 4),
+
+-- Rider only reads deliveries
+(3, 3);
+
+SELECT * FROM role_permissions;
+
+-- Manager is supervising Rider
+INSERT INTO user_hierarchy (manager_id, subordinate_id) VALUES
+(5, 6);
+
+INSERT INTO riders (name, phone, status, verified, locality) VALUES
+('Ravi Rider', '9998887776', 'available', TRUE, 'South Delhi'),
+('Pooja Singh', '8887776665', 'busy', FALSE, 'North Delhi');
+
+INSERT INTO deliveries (order_id, rider_id, status, tracking_id) VALUES
+('ORD001', 1, 'assigned', 'TRK001'),
+('ORD002', 2, 'in-progress', 'TRK002');
+
+INSERT INTO third_party_services (name, contact_info, areas_covered) VALUES
+('DHL Logistics', '9876543210, dhl@example.com', 'Pan India'),
+('BlueDart', '9123456789, bluedart@example.com', 'Metro Cities');
+
+INSERT INTO tracking (delivery_id, current_location, status_update) VALUES
+(1, 'Warehouse - South Delhi', 'Package picked up'),
+(2, 'On the way to destination', 'In transit');
+
+INSERT INTO inventory (item_name, quantity_available, location) VALUES
+('T-Shirts', 100, 'Warehouse A'),
+('Mobile Phones', 50, 'Warehouse B');
+
+-- Admin: All
+INSERT INTO role_permissions (role_id, permission_id) 
+SELECT 1, id FROM permissions;
+
+-- Manager: Only Users & Deliveries
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT 2, id FROM permissions WHERE page_name IN ('Users', 'Deliveries');
+
+-- Rider: Only Tracking
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT 3, id FROM permissions WHERE page_name = 'Tracking';

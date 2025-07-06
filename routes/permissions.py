@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from models import Permission
 from extensions import db
+from auth import role_required
 
 permissions_bp = Blueprint('permissions', __name__, url_prefix='/permissions')
 
@@ -13,6 +14,7 @@ def get_permissions():
     ])
 
 @permissions_bp.route('/', methods=['POST'])
+@role_required('Admin')
 def create_permission():
     data = request.get_json()
     page_name = data.get('page_name')
@@ -32,6 +34,7 @@ def create_permission():
 
 # Update a permission
 @permissions_bp.route('/<int:id>', methods=['PUT'])
+@role_required('Admin')
 def update_permission(id):
     permission = Permission.query.get(id)
     if not permission:
@@ -47,6 +50,7 @@ def update_permission(id):
 
 # Delete a permission
 @permissions_bp.route('/<int:id>', methods=['DELETE'])
+@role_required('Admin')
 def delete_permission(id):
     permission = Permission.query.get(id)
     if not permission:
